@@ -1,0 +1,29 @@
+---
+version: '2'
+services:
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:latest
+    container_name: control-center-ccloud
+    ports: 
+      - "9021:9021" 
+    environment: 
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: SASL_SSL://pkc-41wq6.eu-west-2.aws.confluent.cloud:9092
+      CONTROL_CENTER_STREAMS_SECURITY_PROTOCOL: SASL_SSL 
+      CONTROL_CENTER_STREAMS_SASL_MECHANISM: PLAIN 
+      CONTROL_CENTER_STREAMS_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required \
+         username=\"WQWLK3AG6Q4VGCXL\" \
+         password=\"XqcBK/gqy58wq5+A2xEk2lZjJYVOHcrlHZo1qyj052//8iomMpDyJdIlvxK4k4Cv\";"
+      CONTROL_CENTER_STREAMS_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: HTTPS
+      CONTROL_CENTER_METRICS_TOPIC_MAX_MESSAGE_bytes: "8388608"
+      CONTROL_CENTER_REPLICATION_FACTOR: 3 
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 3 
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 3 
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_SECURITY_PROTOCOL: SASL_SSL 
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_MECHANISM: PLAIN 
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required \
+         username=\"WQWLK3AG6Q4VGCXL\" \
+         password=\"XqcBK/gqy58wq5+A2xEk2lZjJYVOHcrlHZo1qyj052//8iomMpDyJdIlvxK4k4Cv\";"
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: https
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 3 
+      # CONTROL_CENTER_CONFLUENT_LICENSE: "license here if needed"
+      # CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL: DEBUG # enable DEBUG mode
