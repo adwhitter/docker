@@ -2,11 +2,10 @@ FROM node:alpine
 
 WORKDIR '/app'
 
-
 COPY ./package.json ./
 RUN npm install
 COPY . . 
 
 CMD ["npm","start"]
 
-# build and run with:  docker-compose up --build
+# build and run with:  docker-compose up --build .
