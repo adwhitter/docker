@@ -1,8 +1,7 @@
----
 version: '2'
 services:
   zookeeper1:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-zookeeper:6.0.x-latest
+    image: confluentinc/cp-zookeeper:latest
     hostname: zookeeper1
     container_name: zookeeper1
     networks:
@@ -16,7 +15,7 @@ services:
       ZOOKEEPER_SERVERS: zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
 
   zookeeper2:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-zookeeper:6.0.x-latest
+    image: confluentinc/cp-zookeeper:latest
     hostname: zookeeper2
     container_name: zookeeper2
     networks:
@@ -32,7 +31,7 @@ services:
       - zookeeper1
 
   zookeeper3:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-zookeeper:6.0.x-latest
+    image: confluentinc/cp-zookeeper:latest
     hostname: zookeeper3
     container_name: zookeeper3
     networks:
@@ -49,7 +48,7 @@ services:
       - zookeeper2
 
   kafka1:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-server:6.0.x-latest
+    image: confluentinc/cp-server:latest
     hostname: kafka1
     container_name: kafka1
     networks:
@@ -75,7 +74,7 @@ services:
       - zookeeper3
 
   kafka2:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-server:6.0.x-latest
+    image: confluentinc/cp-server:latest
     hostname: kafka2
     container_name: kafka2
     networks:
@@ -102,7 +101,7 @@ services:
       - kafka1
 
   kafka3:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-server:6.0.x-latest
+    image: confluentinc/cp-server:latest
     hostname: kafka3
     container_name: kafka3
     networks:
@@ -130,7 +129,7 @@ services:
       - kafka2
 
   control-center:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-enterprise-control-center:6.0.x-latest
+    image: confluentinc/cp-enterprise-control-center:latest
     hostname: control-center
     container_name: control-center
     networks:
@@ -140,6 +139,8 @@ services:
       - zookeeper2
       - zookeeper3
       - kafka1
+      - kafka2
+      - kafka3
     ports:
       - "9021:9021"
     environment:
