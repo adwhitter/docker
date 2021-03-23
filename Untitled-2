@@ -1,0 +1,11 @@
+// Broker & ZK log analysis
+
+server13.log
+
+Start: 2021-02-27
+End: 2021-03-04 
+
+23k errors. "org.apache.kafka.common.errors.TimeoutException: Expiring 5 record(s) for _confluent-metrics-1:120000 ms has passed since batch creation"
+
+
+

@@ -1,0 +1,111 @@
+Operator with GKE
+
+
+Discussions around monitoring. 
+
+No figures for effectiveness of compression with our e2e encryption. Too dependent on architecture, data etc.
+Introduce compressing interceptor before it goes to encryption (now compressing on message level rather than batch level) but still better than encrypt->batch
+Wix are collating messages for batch/encryption so they see some optimisation
+
+Have you increased load to maximum?
+No, still only at 10/15%
+When do you plan to increase these numbers?
+We will make the increase over time. We dont have anything committed right now - we have 3 pipelines of events. Batch pipeline (15TB / day). 
+Streaming pipeline based on on-prem kafka.
+Pipeline based on Confluent Kafka.   We plan to switch off the on-prem kafka. and move batch pipeline (15TB/day)  No dates but within next 6 months maybe faster. 
+
+Be aware that as you ramp up there are cluster limits for total number of partitions
+Also, there are ingress / egress limits 
+Need to keep these in mind as you ramp up
+
+west-1: 9091:9091, 8091:8091
+{  
+  "version": 2,
+    "replicas": [
+        {
+            "count": 2,
+            "constraints": {
+                "rack": "west"
+            }
+        },
+        {
+            "count": 2,
+            "constraints": {
+                "rack": "east"
+            }
+        }
+    ],
+    "observers": [
+        {
+            "count": 1,
+            "constraints": {
+                "rack": "west_o"
+            }
+        },
+        {
+            "count": 1,
+            "constraints": {
+                "rack": "east_o"
+            }
+        }
+    ],
+    "observerPromotionPolicy": "under-min-isr"
+}
+
+{
+"version": 2,
+    "replicas": [
+        {
+            "count": 2,
+            "constraints": {
+                "rack": "west"
+            }
+        }
+    ],
+    "observers": [
+        {
+            "count": 2,
+            "constraints": {
+                "rack": "east"
+            }
+        }
+    ],
+    "observerPromotionPolicy":"under-min-isr"
+}
+
+
+
+// Depoloying then upgrading CP using GKE
+// with Operator
+
+// Step1. Download Operator: https://platform-ops-bin.s3-us-west-1.amazonaws.com/operator/confluent-operator-1.7.0.tar.gz
+
+// Step2. cp ${OPERATOR}/helm/gke.yaml ${OPERATOR}/helm/my-values.yaml 
+//        export VALUES_FILE=${OPERATOR}/heml/my-values.yaml
+
+// Step3. Create the cluster in GKE
+gcloud  container --project adam-whitter-lab clusters create cp-examples-operator-awhitter --zone europe-west1-c --no-enable-basic-auth --cluster-version latest --machine-type n1-highmem-2 --image-type COS --disk-type pd-standard --disk-size 100 --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" --num-nodes 3 --no-enable-autoupgrade --no-issue-client-certificate --metadata disable-legacy-endpoints=true --enable-ip-alias --network "projects/adam-whitter-lab/global/networks/default" --subnetwork "projects/adam-whitter-lab/regions/europe-west1/subnetworks/default" --default-max-pods-per-node "110" --addons HorizontalPodAutoscaling,HttpLoadBalancing
+
+// Step4. Create a namespace 'operator/ in project adam-whitter-lab
+kubectl apply -f /Users/awhitter/projects/examples61/kubernetes/common/cfg/operator-namespace.json
+
+// Now check it exists
+kubectl get namespace
+NAME              STATUS   AGE
+default           Active   13m
+kube-node-lease   Active   13m
+kube-public       Active   13m
+kube-system       Active   13m
+operator          Active   16s
+
+// Step5. Install operator
+helm upgrade --install --namespace operator --wait --timeout=5m -f $VALUES_FILE --set global.initContainer.image.tag=6.1.0 --set global.provider.region=europe-west1 --set global.provider.kubernetes.deployment.zones={europe-west1-c} --set operator.enabled=true operator /Users/awhitter/projects/examples61/kubernetes/common/cp/operator/1.6.1/helm/confluent-operator
+
+
+// Step6. Install CP component: ZK
+helm upgrade --install zookeeper /Users/awhitter/projects/examples61/kubernetes/common/cp/operator/1.6.1/helm/confluent-operator --values $VALUES_FILE --namespace operator --set zookeeper.enabled=true --set global.provider.region=europe-west1 --set global.provider.kubernetes.deployment.zones={europe-west1-c} -set global.initContainer.image.tag=6.0.1.0 --set zookeeper.image.tag=6.1.0
+
+
+helm upgrade --install kafka /Users/awhitter/projects/examples61/kubernetes/common/cp/operator/1.6.1/helm/confluent-operator --values $VALUES_FILE  --namespace operator --wait --timeout=5m --set global.initContainer.image.tag=6.1.0 --set global.provider.region=europe-west1 --set global.provider.kubernetes.deployment.zones={europe-west1-c} --set kafka.image.tag=6.1.0 --set kafka.replicas=1 --set kafka.enabled=true
+
+

@@ -1,0 +1,97 @@
+CITI: MRC
+
+// Note: Ticket suggests issue only exists between RUTH and MW
+// try kafkacat and verify hostnames and IP address make sense
+// https://docs.confluent.io/platform/current/app-development/kafkacat-usage.html
+
+// Also ... is the client really 5.4.2?? dont we have a later client??
+// 
+
+// Also, is it TRUE there is only ZK in one region?! 
+// grep -i zookeeper /etc/kafka/server.properties (or similar)
+//
+
+
+// 
+// Also try traceroute from client in MW -> RUTH and RUTH -> MW
+// 
+// traceroute 
+// traceroute -n
+// dig hostname / dig IP
+// getent hosts hostname
+
+
+// sanity checks before we begin!
+// use SAME client node each time??
+//
+
+// Sanity checks: Check ZK logs for errors or timeouts.
+// Check broker logs for errors or timeouts.
+// 
+
+
+// kafkacat -L -b localhost:9091 
+// verify IP addresses of brokers
+// Also information about topic partition leaders
+//
+topic "topic1" with 1 partitions:
+    partition 0, leader 1, replicas: 1, isrs: 1
+topic "topic2" with 1 partitions:
+    partition 0, leader 2, replicas: 2, isrs: 2
+topic "topic3" with 1 partitions:
+    partition 0, leader 3, replicas: 3, isrs: 3
+
+
+// My test was to create 3 topics with parition placement. 
+// 3 placements all identical: 
+{
+    "version": 1,
+    "replicas": [
+        {
+            "count": 1,
+            "constraints": {
+                "rack": "rack1"
+            }
+        }
+    ]
+}
+
+// Clear down logs (possible?) //
+
+// create 3 topics. like this:
+docker exec kafka1 kafka-topics --create --bootstrap-server kafka1:19091 --topic topic1 --partitions 1 \
+    --replica-placement /tmp/topic1-node1.json --config min.insync.replicas=1
+
+// describe the topics
+% docker exec kafka1 kafka-topics --bootstrap-server kafka1:19091 --describe --topic topic1
+Topic: topic1   PartitionCount: 1       ReplicationFactor: 1    Configs: min.insync.replicas=1,confluent.placement.constraints={"version":1,"replicas":[{"count":1,"constraints":{"rack":"rack1"}}],"observers":[]}
+        Topic: topic1   Partition: 0    Leader: 1       Replicas: 1     Isr: 1  Offline: 
+
+% docker exec kafka1 kafka-topics --bootstrap-server kafka1:19091 --describe --topic topic2
+Topic: topic2   PartitionCount: 1       ReplicationFactor: 1    Configs: min.insync.replicas=1,confluent.placement.constraints={"version":1,"replicas":[{"count":1,"constraints":{"rack":"rack2"}}],"observers":[]}
+        Topic: topic2   Partition: 0    Leader: 2       Replicas: 2     Isr: 2  Offline:
+
+% docker exec kafka1 kafka-topics --bootstrap-server kafka1:19091 --describe --topic topic3
+Topic: topic3   PartitionCount: 1       ReplicationFactor: 1    Configs: min.insync.replicas=1,confluent.placement.constraints={"version":1,"replicas":[{"count":1,"constraints":{"rack":"rack3"}}],"observers":[]}
+        Topic: topic3   Partition: 0    Leader: 3       Replicas: 3     Isr: 3  Offline: 
+
+
+// Now should be able to kafka-perf-test from RUTH -> MW. Make sure this is run BOTH on broker node AND on client node in RUTH.
+
+// worth running BOTH on MRC and on a client in MRC and on another region
+kafka-producer-perf-test --topic topic1 --num-records 100000 --throughput 10000 --print-metrics  --record-size 1000 \
+                         --producer-props bootstrap.servers=kafka1:9091  acks=0 linger.ms=100 batch.size=33554432
+
+// Interesting perf tests to run
+//
+//  1
+kafka-producer-perf-test --topic topic1 --num-records 100000 --throughput 10000 --print-metrics  --record-size 1000 \
+                         --producer-props bootstrap.servers=kafka1:9091  acks=1 linger.ms=100 batch.size=33554432
+
+// can also add: compression.type=lz4
+
+// Now lets swap round and run MW -> RUTH. Make sure this is run BOTH on broker node AND on client node in MW.
+
+lnjisgksapn02: BrokerID 8  (Ruth)
+
+Metric                        

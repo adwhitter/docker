@@ -1,0 +1,36 @@
+Swedbank:
+
+For connect 6.1.0: 
+------------------
+java --version
+openjdk 11.0.10 2021-01-19 LTS
+OpenJDK Runtime Environment Zulu11.45+27-CA (build 11.0.10+9-LTS)
+OpenJDK 64-Bit Server VM Zulu11.45+27-CA (build 11.0.10+9-LTS, mixed mode)
+
+
+[appuser@connect ~]$ update-alternatives --config java
+
+There is 1 program that provides 'java'.
+
+  Selection    Command
+-----------------------------------------------
+*+ 1           /usr/lib/jvm/zulu11/bin/java
+
+rpm -qa |grep -i jre
+zulu11-ca-jre-headless-11.0.10-1.x86_64
+zulu11-ca-jre-11.0.10-1.x86_64
+zulu11-jre-headless-11.0.10-1.x86_64
+zulu11-jre-11.0.10-1.x86_64
+
+
+
+for 5.5.2
+----------
+java -version
+openjdk version "1.8.0_222"
+OpenJDK Runtime Environment (Zulu 8.40.0.25-CA-linux64) (build 1.8.0_222-b10)
+OpenJDK 64-Bit Server VM (Zulu 8.40.0.25-CA-linux64) (build 25.222-b10, mixed mode)
+
+----------------------
+Wix Latency: lkc-y9jx7
+----------------------
